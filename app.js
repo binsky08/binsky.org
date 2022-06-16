@@ -216,6 +216,8 @@ var Typer = {
     hostname: 'binsky.org',
     username: 'root',
     tmp_usercommand: "",
+    cursorChars: '<span id="blinkingcursor" style="display: inline;">|</span>',
+    cursorCharsHidden: '<span id="blinkingcursor" style="display: none;">|</span>',
     usercommands: [''],
     usercommandnumber: 0,
     userontyping: 0,
@@ -239,12 +241,32 @@ var Typer = {
     },
 
     write: function(str) {              // append to console content
-        let cont = this.content();      // get console
-        if(cont.substring(cont.length - 1, cont.length) == "|") {   // if last char is the cursor
-            $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it
-        }
+        this.removeCursor();
         $("#console").append(str);
         return false;
+    },
+    
+    removeCursor: function(hideOnly = false) {
+        let cont = this.content();      // get console
+        if(cont.substring(cont.length - this.cursorChars.length, cont.length) == this.cursorChars) {   // if last characters are the cursor
+            if (hideOnly) {
+                $("#blinkingcursor").css("display", "none");
+            } else {
+                $("#console").html($("#console").html().substring(0, cont.length - this.cursorChars.length)); // remove it
+                //$("#console").replaceWith($("#console").html().substring(0, cont.length - 1));
+            }
+            return true;
+        }
+        return false;
+    },
+    
+    addCursor: function() {
+        let cont = this.content();      // get console
+        if(cont.substring(cont.length - this.cursorCharsHidden.length, cont.length) == this.cursorCharsHidden) {   // if last characters are the cursor
+            $("#blinkingcursor").css("display", "inline");
+        } else if (cont.substring(cont.length - this.cursorChars.length, cont.length) != this.cursorChars) {
+            this.write(this.cursorChars);
+        }
     },
 
     makeAccess: function() {            //create Access Granted popUp      FIXME: popup is on top of the page and doesn't show is the page is scrolled
@@ -286,9 +308,8 @@ var Typer = {
         } else if(key.keyCode == 27) {  // key 27 = esc key
             Typer.hidepop();            // hide all popups
         } else if(Typer.text) {         // otherway if text is loaded
-            let cont = Typer.content(); // get the console content
-            if(cont.substring(cont.length - 1, cont.length) == "|") // if the last char is the blinking cursor
-                $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it before adding the text
+            this.removeCursor();
+
             if(key.keyCode != 8){       // if key is not backspace
                 Typer.index += Typer.speed; // add to the index the speed
             } else {
@@ -297,7 +318,7 @@ var Typer = {
             }
             let text = Typer.text.substring(0, Typer.index) // parse the text for stripping html enities
             const rtn = new RegExp("\n", "g");  // newline regex
-    
+
             $("#console").html(text.replace(rtn, "<br/>"));// replace newline chars with br, tabs with 4 space and blanks with an html blank
             window.scrollBy(0, 50); // scroll to make sure bottom is always visible
         }
@@ -310,12 +331,9 @@ var Typer = {
     },
 
     updLstChr: function() {             // blinking cursor
-        let cont = this.content();      // get console 
-        if(cont.substring(cont.length - 1, cont.length) == "|"){    // if last char is the cursor
-            $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it
-        } else {
+        if(!this.removeCursor(true)){       // if last char is not the cursor
             if(Typer.userontyping == 0) {   //stop cursor writing while user is typing
-                this.write("|");        // else write it
+                this.addCursor();           // else write it
                 //console.log(Typer.userontyping);
             } else {
                 //console.log(Typer.userontyping);
@@ -362,9 +380,9 @@ document.onkeydown = function(e) {
     
     if(e.keyCode == 37 || e.keyCode == 8){  //arrow left
         if(cont.substring(cont.length-1, cont.length) == "|"){   // if last char is the cursor
-            $("#console").html($("#console").html().substring(0, cont.length - 2)); // remove it
+            $("#console").html(cont.substring(0, cont.length - 2)); // remove it
         } else {
-            $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it
+            $("#console").html(cont.substring(0, cont.length - 1)); // remove it
         }
         Typer.tmp_usercommand = Typer.tmp_usercommand.substring(0, Typer.tmp_usercommand.length - 1);
     }
@@ -378,22 +396,22 @@ document.onkeydown = function(e) {
             //console.log(Typer.usercommands[Typer.nup][0]);
         
             if(cont.substring(cont.length-1,cont.length)=="|"){ // if last char is the cursor
-                $("#console").html($("#console").html().substring(0,cont.length+1-Typer.tmp_usercommand.length-1)); // remove it
+                $("#console").html(cont.substring(0,cont.length+1-Typer.tmp_usercommand.length-1)); // remove it
             } else {
-                $("#console").html($("#console").html().substring(0,cont.length+1-Typer.tmp_usercommand.length)); // remove it
+                $("#console").html(cont.substring(0,cont.length+1-Typer.tmp_usercommand.length)); // remove it
             }
             
             /*
             let tl = Typer.usercommands[Typer.nup][1];
             if(Typer.nup!=0){
-                $("#console").html($("#console").html().substring(0,cont.length-Typer.tmp_usercommand.length)); // remove it
+                $("#console").html(cont.substring(0,cont.length-Typer.tmp_usercommand.length)); // remove it
             } else {
-                $("#console").html($("#console").html().substring(0,cont.length-Typer.tmp_usercommand.length)+Typer.usercommands[tl-1]); // remove it
+                $("#console").html(cont.substring(0,cont.length-Typer.tmp_usercommand.length)+Typer.usercommands[tl-1]); // remove it
             }
             Typer.tmp_usercommand=0;
             */
             
-            $("#console").html($("#console").html() + Typer.usercommands[Typer.nup][0]);
+            $("#console").html(cont + Typer.usercommands[Typer.nup][0]);
             Typer.tmp_usercommand = Typer.usercommands[Typer.nup][0];
             Typer.nup = Typer.nup + 1;
         }
@@ -421,13 +439,13 @@ document.onkeydown = function(e) {
         //console.log(Typer.usercommands[Typer.nup-1][0]);
             
         if(cont.substring(cont.length - 1, cont.length) == "|") { // if last char is the cursor
-            $("#console").html($("#console").html().substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1]-1)); // remove it
+            $("#console").html(cont.substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1]-1)); // remove it
         } else {
-            $("#console").html($("#console").html().substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1])); // remove it
+            $("#console").html(cont.substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1])); // remove it
         }
         cont = Typer.content();
             
-        $("#console").html($("#console").html() + Typer.usercommands[Typer.nup-1][0]);
+        $("#console").html(cont + Typer.usercommands[Typer.nup-1][0]);
         
         
         if(Typer.setted_tmp == 1) {
@@ -446,28 +464,28 @@ document.onkeydown = function(e) {
             console.log(Typer.nup);
             console.log(Typer.usercommands[tl-Typer.nup]);
             if((Typer.nup + 1) == tl){
-                $("#console").html($("#console").html().substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
+                $("#console").html(cont.substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
             }
-            else $("#console").html($("#console").html().substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
+            else $("#console").html(cont.substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
             
             Typer.tmp_usercommand=0;
             
             
-            $("#console").html($("#console").html()+Typer.usercommands[Typer.usercommandnumber-Typer.nup]); // remove it
+            $("#console").html(cont+Typer.usercommands[Typer.usercommandnumber-Typer.nup]); // remove it
          }.then()
          else{
              console.log(Typer.nup);
              console.log(Typer.usercommands[Typer.usercommandnumber].length);
-             $("#console").html($("#console").html().substring(0,cont.length-Typer.usercommands[Typer.nup].length)); // remove it
+             $("#console").html(cont.substring(0,cont.length-Typer.usercommands[Typer.nup].length)); // remove it
              Typer.nup = 0;
          }
          */
     }
     if(e.keyCode == 13) {  //enter
         if(cont.substring(cont.length - 1, cont.length) == "|") { // if last char is the cursor
-            $("#console").html($("#console").html().substring(0,cont.length-1)+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
+            $("#console").html(cont.substring(0,cont.length-1)+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
         } else {
-            $("#console").html($("#console").html()+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
+            $("#console").html(cont+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
         }
         let ua = new Array();
         let clear = true;
@@ -485,7 +503,7 @@ document.onkeydown = function(e) {
             //help += "'video1' - set background video 1<br>";
             //help += "'video2' - set background video 2<br>";
             
-            $("#console").html($("#console").html()+help+'<span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');
+            $("#console").html(cont+help+'<span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');
             /*setTimeout(function(){
                 var e = jQuery.Event("keypress");
                 e.which = 13; //choose the one you want
