@@ -417,6 +417,14 @@ document.onkeydown = function(e) {
         $("#console").html(cont + Typer.tmp_usercommand);
     }
     if(e.keyCode == 13) {  //enter
+
+        if(Typer.tmp_usercommand.includes("hostname") && Typer.tmp_usercommand.length >= 10) {
+            Typer.hostname = Typer.tmp_usercommand.substring(9).trim();
+        }
+        if(Typer.tmp_usercommand.includes("username") && Typer.tmp_usercommand.length >= 10) {
+            Typer.username = Typer.tmp_usercommand.substring(9).trim();
+        }
+
         $("#console").html(cont+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');   // add new line for next user command input
 
         if(Typer.tmp_usercommand.includes("help") && Typer.tmp_usercommand.length <= 6){
@@ -451,12 +459,6 @@ document.onkeydown = function(e) {
         }
         if(Typer.tmp_usercommand.includes("clear") && Typer.tmp_usercommand.length <= 7) {
             $("#console").html('<span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');
-        }
-        if(Typer.tmp_usercommand.includes("hostname") && Typer.tmp_usercommand.length >= 10) {
-            Typer.hostname = Typer.tmp_usercommand.substring(9).trim();
-        }
-        if(Typer.tmp_usercommand.includes("username") && Typer.tmp_usercommand.length >= 10) {
-            Typer.username = Typer.tmp_usercommand.substring(9).trim();
         }
         if(Typer.tmp_usercommand.includes("fullscreen") && Typer.tmp_usercommand.length <= 12) {
             var elem = document.getElementById("console");
