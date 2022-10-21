@@ -211,15 +211,13 @@ var MailReg={
 ///// typer animation
 
 var Typer = {
-    nup: 0,
-    setted_tmp: 0,
     hostname: 'binsky.org',
     username: 'root',
-    tmp_usercommand: "",
+    tmp_usercommand: "",                // usercommand on time of writing before pressing enter
     cursorChars: '<span id="blinkingcursor" style="display: inline;">|</span>',
     cursorCharsHidden: '<span id="blinkingcursor" style="display: none;">|</span>',
     usercommands: [''],
-    usercommandnumber: 0,
+    usercommandCurrentSelectionPosition: 0,
     userontyping: 0,
     text: null,
     accessCountimer: null,
@@ -248,14 +246,19 @@ var Typer = {
     
     removeCursor: function(hideOnly = false) {
         let cont = this.content();      // get console
-        if(cont.substring(cont.length - this.cursorChars.length, cont.length) == this.cursorChars) {   // if last characters are the cursor
-            if (hideOnly) {
+        if (hideOnly) {
+            if(cont.substring(cont.length - this.cursorChars.length, cont.length) == this.cursorChars) {   // if last characters are the online cursor
                 $("#blinkingcursor").css("display", "none");
-            } else {
-                $("#console").html($("#console").html().substring(0, cont.length - this.cursorChars.length)); // remove it
-                //$("#console").replaceWith($("#console").html().substring(0, cont.length - 1));
+                return true;
             }
-            return true;
+        } else {
+            if(cont.substring(cont.length - this.cursorChars.length, cont.length) == this.cursorChars) {   // if last characters are the online cursor
+                $("#console").html($("#console").html().substring(0, cont.length - this.cursorChars.length)); // remove it
+                return true;
+            } else if(cont.substring(cont.length - this.cursorCharsHidden.length, cont.length) == this.cursorCharsHidden) {   // if last characters are the offline cursor
+                $("#console").html($("#console").html().substring(0, cont.length - this.cursorCharsHidden.length)); // remove it
+                return true;
+            }
         }
         return false;
     },
@@ -376,120 +379,46 @@ document.onkeypress = function(e) {
 document.onkeydown = function(e) {
     e = e || window.event;
     //console.log(e.keyCode);
-    let cont = Typer.content(); // get console 
-    
+    //console.log(Typer.usercommands);
+
+    Typer.removeCursor();
+    Typer.userontyping = 1;
+    let cont = Typer.content(); // get console
+
     if(e.keyCode == 37 || e.keyCode == 8){  //arrow left
-        if(cont.substring(cont.length-1, cont.length) == "|"){   // if last char is the cursor
-            $("#console").html(cont.substring(0, cont.length - 2)); // remove it
-        } else {
-            $("#console").html(cont.substring(0, cont.length - 1)); // remove it
-        }
+        $("#console").html(cont.substring(0, cont.length - 1)); // remove last char
         Typer.tmp_usercommand = Typer.tmp_usercommand.substring(0, Typer.tmp_usercommand.length - 1);
     }
     if(e.keyCode == 38) {  //arrow up
-        let temp_tmp_usercommand = "";
-        if(Typer.tmp_usercommand != "" && Typer.setted_tmp == 0) {
-            temp_tmp_usercommand = Typer.tmp_usercommand;
-        }
-        
-        if(Typer.nup < Typer.usercommands.length - 1) {
-            //console.log(Typer.usercommands[Typer.nup][0]);
-        
-            if(cont.substring(cont.length-1,cont.length)=="|"){ // if last char is the cursor
-                $("#console").html(cont.substring(0,cont.length+1-Typer.tmp_usercommand.length-1)); // remove it
-            } else {
-                $("#console").html(cont.substring(0,cont.length+1-Typer.tmp_usercommand.length)); // remove it
+        if(Typer.usercommandCurrentSelectionPosition == 0) {
+            if(Typer.usercommands[Typer.usercommandCurrentSelectionPosition] != Typer.tmp_usercommand) {
+                Typer.usercommands.unshift(Typer.tmp_usercommand);
             }
-            
-            /*
-            let tl = Typer.usercommands[Typer.nup][1];
-            if(Typer.nup!=0){
-                $("#console").html(cont.substring(0,cont.length-Typer.tmp_usercommand.length)); // remove it
-            } else {
-                $("#console").html(cont.substring(0,cont.length-Typer.tmp_usercommand.length)+Typer.usercommands[tl-1]); // remove it
-            }
-            Typer.tmp_usercommand=0;
-            */
-            
-            $("#console").html(cont + Typer.usercommands[Typer.nup][0]);
-            Typer.tmp_usercommand = Typer.usercommands[Typer.nup][0];
-            Typer.nup = Typer.nup + 1;
+            Typer.tmp_usercommand = "";
         }
-        if(temp_tmp_usercommand != "") {
-            let ua = new Array();
-            ua.push(temp_tmp_usercommand);
-            ua.push(temp_tmp_usercommand.length);
-            Typer.usercommands.unshift(ua);
-            //Typer.tmp_usercommand = "";
-            Typer.usercommandnumber = Typer.usercommandnumber + 1;
-            Typer.nup = Typer.nup + 1;
-            Typer.setted_tmp = 1;
+
+        if(Typer.usercommandCurrentSelectionPosition < Typer.usercommands.length) {
+            Typer.usercommandCurrentSelectionPosition += 1;
+
+            //console.log("cut off: " + cont.substring(cont.length - Typer.tmp_usercommand.length));
+            cont = cont.substring(0, cont.length - Typer.tmp_usercommand.length);
+
+            // load and show next usercommand from history
+            $("#console").html(cont + Typer.usercommands[Typer.usercommandCurrentSelectionPosition]);
+            Typer.tmp_usercommand = Typer.usercommands[Typer.usercommandCurrentSelectionPosition];
+            //Typer.usercommandCurrentSelectionPosition += 1;
         }
     }
-    if(e.keyCode == 40 && Typer.nup > 1) {  //arrow down
-        let tc = 0;
-        if(Typer.setted_tmp == 1 && Typer.nup == 1) {
-            Typer.nup = Typer.nup + 1;
-            //console.log("---setted");
-            tc = 1;
-            //Typer.setted_tmp = 0;
-        }
-        Typer.nup = Typer.nup - 1;
-        
-        //console.log(Typer.usercommands[Typer.nup-1][0]);
-            
-        if(cont.substring(cont.length - 1, cont.length) == "|") { // if last char is the cursor
-            $("#console").html(cont.substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1]-1)); // remove it
-        } else {
-            $("#console").html(cont.substring(0,cont.length-1+tc-Typer.usercommands[Typer.nup][1])); // remove it
-        }
-        cont = Typer.content();
-            
-        $("#console").html(cont + Typer.usercommands[Typer.nup-1][0]);
-        
-        
-        if(Typer.setted_tmp == 1) {
-            Typer.setted_tmp = 0;
-            //Typer.nup=Typer.nup-1;
-        }
-        
-        /*
-        if(Typer.nup  >1) {
-            if(Typer.nup <= -1) Typer.nup = -1;
-            if((Typer.nup) != tl) Typer.nup = Typer.nup -1;
-            var tl = Typer.usercommands.length;
-            console.log(Typer.usercommandnumber);
-            console.log(tl);
-            console.log(Typer.usercommands[tl-Typer.nup-1]);
-            console.log(Typer.nup);
-            console.log(Typer.usercommands[tl-Typer.nup]);
-            if((Typer.nup + 1) == tl){
-                $("#console").html(cont.substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
-            }
-            else $("#console").html(cont.substring(0,cont.length-Typer.usercommands[tl-Typer.nup-1].length)+Typer.usercommands[tl-Typer.nup]); // remove it
-            
-            Typer.tmp_usercommand=0;
-            
-            
-            $("#console").html(cont+Typer.usercommands[Typer.usercommandnumber-Typer.nup]); // remove it
-         }.then()
-         else{
-             console.log(Typer.nup);
-             console.log(Typer.usercommands[Typer.usercommandnumber].length);
-             $("#console").html(cont.substring(0,cont.length-Typer.usercommands[Typer.nup].length)); // remove it
-             Typer.nup = 0;
-         }
-         */
+    if(e.keyCode == 40 && Typer.usercommandCurrentSelectionPosition > 0) {  //arrow down
+        cont = cont.substring(0, cont.length - Typer.tmp_usercommand.length); // remove tmp_usercommand (clear history input from line)
+
+        Typer.usercommandCurrentSelectionPosition -= 1;
+        Typer.tmp_usercommand = Typer.usercommands[Typer.usercommandCurrentSelectionPosition];
+        $("#console").html(cont + Typer.tmp_usercommand);
     }
     if(e.keyCode == 13) {  //enter
-        if(cont.substring(cont.length - 1, cont.length) == "|") { // if last char is the cursor
-            $("#console").html(cont.substring(0,cont.length-1)+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
-        } else {
-            $("#console").html(cont+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>'); // remove it
-        }
-        let ua = new Array();
-        let clear = true;
-        
+        $("#console").html(cont+'<br/><span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');   // add new line for next user command input
+
         if(Typer.tmp_usercommand.includes("help") && Typer.tmp_usercommand.length <= 6){
             let help = " Available commands:<br>";
             help += "'reboot' - reload page<br>";
@@ -502,7 +431,7 @@ document.onkeydown = function(e) {
             help += "'hostname' - replace virtual console hostname<br>";
             //help += "'video1' - set background video 1<br>";
             //help += "'video2' - set background video 2<br>";
-            
+
             $("#console").html(cont+help+'<span id="a">'+Typer.username+'@'+Typer.hostname+'</span>:<span id="b">~</span><span id="c">$</span>');
             /*setTimeout(function(){
                 var e = jQuery.Event("keypress");
@@ -559,7 +488,9 @@ document.onkeydown = function(e) {
             vid.load();
             vid.play();
         }
-        
+
+        let clear = true;
+
         ///// basic implementation of a email registration form
         /*
         if(Typer.tmp_usercommand.includes("email") && Typer.tmp_usercommand.length <= 7 && enableEmailRegistration){
@@ -627,14 +558,14 @@ document.onkeydown = function(e) {
         }
         */
         /////
-        
-        ua.push(Typer.tmp_usercommand);
-        ua.push(Typer.tmp_usercommand.length);
-        Typer.usercommands.unshift(ua);
+
+        Typer.usercommandCurrentSelectionPosition = 0;
+        if(Typer.tmp_usercommand != '' && Typer.tmp_usercommand != '\r' && Typer.tmp_usercommand != '\n') {
+            Typer.usercommands.unshift(Typer.tmp_usercommand);
+        }
         if(clear) {
             Typer.tmp_usercommand = "";
         }
-        Typer.usercommandnumber = Typer.usercommandnumber + 1;
         scrollToBottom();
     }
 };
