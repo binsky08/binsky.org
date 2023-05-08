@@ -12,7 +12,7 @@
 <link rel="preload" href="assets/fonts/Broken.otf" as="font" type="font/opentype">
 <link rel="preload" href="style.css" as="style">
 <link rel="preload" href="assets/js/jquery.min.js" as="script">
-<link rel="preload" href="app.js" as="script">
+<link rel="module" href="app.js" as="script">
 
 <script src="assets/js/jquery.min.js" integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ" crossorigin="anonymous"></script>
 <script src="assets/js/bootstrap-slider.min.js" integrity="sha384-zdPTsjljZsv2x02Dh9tJkwW1pVC3fUT0N1eWPzxmKQ5KiUPgE7I8L/Zvwq7624Ew" crossorigin="anonymous"></script>
@@ -43,7 +43,10 @@
                         </span>
                     </div>
                     <div class="panel-body">
-                        <legend style="color:white;">binsky.org Konsole</legend>
+                        <legend style="color:white;">
+                            <span id="console-legend">binsky.org Konsole</span>
+                            <span id="projects-legend">Meine Projekte</span>
+                        </legend>
                         <title>binsky.org Konsole</title> 
                         <div id="console"></div> 
                     </div>
@@ -56,4 +59,4 @@
 </html>
 
 <style id="explosionStyleBlock"></style>
-<script type="text/javascript" src="app.js"></script>
+<script type="module" src="app.js"></script>
