@@ -3,7 +3,7 @@
  * Project: binsky.org Website Animation
  */
 
-import {consoleOnKeyDownCallback, consoleOnKeyPressCallback, Typer} from './js/console.js';
+import {consoleOnKeyDownCallback, consoleOnKeyPressCallback, Typer} from './console.js';
 
 ///// title explosion intro
 
