@@ -138,6 +138,15 @@ video#bgvid {
     background-size: cover; 
 }
 
+.panel-body > legend > span {
+    margin-right: 30px;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 3px;
+}
+.panel-body > legend > span:hover {
+    background-color: #212121;
+}
 
 /* title explosion intro */
 
