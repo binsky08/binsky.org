@@ -41,6 +41,15 @@ function setPageContent() {
     document.getElementById('body').style.paddingTop = '40px';
     document.getElementById('body').style.display = 'block';
     document.getElementById('logo').style.display = 'block';
+
+    document.getElementById('console-legend').addEventListener('click', () => {
+        document.getElementById('console').style.display = 'block';
+        document.getElementById('projects').style.display = 'none';
+    });
+    document.getElementById('projects-legend').addEventListener('click', () => {
+        document.getElementById('console').style.display = 'none';
+        document.getElementById('projects').style.display = 'block';
+    });
     startPageContentLoading();
 }
 

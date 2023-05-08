@@ -6,21 +6,26 @@
 body {
     background-color: #000
 }
-#console {
+#console, #projects {
     font-family: courier, monospace;
     color: #fff;
     width:90%;
     max-width: 900px;
     margin-left:auto;
     margin-right:auto;
-    
     font-size:14px;
+}
+#projects {
+    display: none;
+}
+.project-item > a {
+    color: #0f0;
 }
 a {
     color: #0bc;
     text-decoration: none;
 }
-#a {
+#a, .a {
     color: #0f0;
 }
 #c {
