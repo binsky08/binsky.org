@@ -1,6 +1,7 @@
 var Typer = {
     hostname: 'binsky.org',
     username: 'root',
+    enableBottomScrollingDuringInitialAnimation: false,
     tmp_usercommand: "",                // usercommand on time of writing before pressing enter
     cursorChars: '<span id="blinkingcursor" style="display: inline;">|</span>',
     cursorCharsHidden: '<span id="blinkingcursor" style="display: none;">|</span>',
@@ -114,7 +115,9 @@ var Typer = {
             const rtn = new RegExp("\n", "g");  // newline regex
 
             $("#console").html(text.replace(rtn, "<br/>"));// replace newline chars with br, tabs with 4 space and blanks with an html blank
-            window.scrollBy(0, 50); // scroll to make sure bottom is always visible
+            if (Typer.enableBottomScrollingDuringInitialAnimation) {
+                window.scrollBy(0, 50); // scroll to make sure bottom is always visible
+            }
         }
         if (key.preventDefault && key.keyCode !== 122) { // prevent F11(fullscreen) from being blocked
             key.preventDefault();
